@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+  <meta charset="UTF-8">
+  <title>Sportsoft Live API Dokumentace</title>
+  <link rel="stylesheet" type="text/css" href="https://unpkg.com/swagger-ui-dist/swagger-ui.css">
+</head>
+<body>
+  <div id="swagger-ui"></div>
+  <script src="https://unpkg.com/swagger-ui-dist/swagger-ui-bundle.js"></script>
+  <script>
+    window.onload = function() {
+      SwaggerUIBundle({
+        spec: {
+          "openapi": "3.0.3",
+          "info": {
+            "title": "Sportsoft Live API",
+            "description": "Kompletní specifikace veřejných REST API rozhraní pro konfiguraci závodů, startovní listiny a živé výsledky.",
+            "version": "1.0.0"
+          },
+          "servers": [
+            { "url": "https://live.sportsoft.cz/api", "description": "Produkční server" }
+          ],
+          "paths": {
+            "/setup/race/{raceId}": {
+              "get": {
+                "summary": "1. Race Setup API",
+                "description": "Vrací kompletní strukturu události včetně soutěží, úseků, kategorií a časů startovacích vln.",
+                "parameters": [
+                  { "name": "raceId", "in": "path", "required": true, "description": "Unikátní ID závodu (např. 880)", "schema": { "type": "integer", "example": 880 } }
+                ],
+                "responses": {
+                  "200": {
+                    "description": "Úspěšné získání konfigurace",
+                    "content": {
+                      "application/json": {
+                        "schema": { "$ref": "#/components/schemas/RaceSetup" }
+                      }
+                    }
+                  },
+                  "404": { "description": "Závod nenalezen" }
+                }
+              }
+            },
+            "/competitors/race/{raceId}": {
+              "get": {
+                "summary": "2. Competitors API",
+                "description": "Vrací pole soutěží s kompletním seznamem závodníků, jejich startovními čísly, kluby a stavem registrace.",
+                "parameters": [
+                  { "name": "raceId", "in": "path", "required": true, "description": "Unikátní ID závodu (např. 880)", "schema": { "type": "integer", "example": 880 } }
+                ],
+                "responses": {
+                  "200": {
+                    "description": "Úspěšné získání seznamu závodníků",
+                    "content": {
+                      "application/json": {
+                        "schema": {
+                          "type": "array",
+                          "items": { "$ref": "#/components/schemas/CompetitionCompetitors" }
+                        }
+                      }
+                    }
+                  },
+                  "404": { "description": "Závod nenalezen" }
+                }
+              }
+            },
+            "/results/race/{raceId}": {
+              "get": {
+                "summary": "3. Results API",
+                "description": "Vrací živé nebo finální výsledky závodu strukturované podle měřených úseků (splits) včetně pořadí a časů.",
+                "parameters": [
+                  { "name": "raceId", "in": "path", "required": true, "description": "Unikátní ID závodu (např. 880)", "schema": { "type": "integer", "example": 880 } }
+                ],
+                "responses": {
+                  "200": {
+                    "description": "Úspěšné získání výsledků",
+                    "content": {
+                      "application/json": {
+                        "schema": {
+                          "type": "array",
+                          "items": { "$ref": "#/components/schemas/CompetitionResults" }
+                        }
+                      }
+                    }
+                  },
+                  "404": { "description": "Závod nenalezen" }
+                }
+              }
+            }
+          },
+          "components": {
+            "schemas": {
+              "RaceSetup": {
+                "type": "object",
+                "properties": {
+                  "Id": { "type": "integer", "example": 880 },
+                  "Name": { "type": "string", "example": "Czech Triatlon Series" },
+                  "Competitions": {
+                    "type": "array",
+                    "items": { "$ref": "#/components/schemas/CompetitionSetup" }
+                  }
+                }
+              },
+              "CompetitionSetup": {
+                "type": "object",
+                "properties": {
+                  "Id": { "type": "integer", "example": 6245 },
+                  "Name": { "type": "string", "example": "Full Distance Triathlon" },
+                  "Ranks": { "type": "boolean", "example": true },
+                  "Distance": { "type": "number", "example": 45 },
+                  "Splits": {
+                    "type": "array",
+                    "items": { "$ref": "#/components/schemas/Split" }
+                  },
+                  "Categories": {
+                    "type": "array",
+                    "items": { "$ref": "#/components/schemas/Category" }
+                  },
+                  "StartTimes": {
+                    "type": "array",
+                    "items": { "$ref": "#/components/schemas/StartTime" }
+                  }
+                }
+              },
+              "Split": {
+                "type": "object",
+                "properties": {
+                  "Name": { "type": "string", "example": "Swim" },
+                  "Distance": { "type": "string", "example": "1.5" },
+                  "IsStart": { "type": "boolean", "example": false },
+                  "IsFinish": { "type": "boolean", "example": false }
+                }
+              },
+              "Category": {
+                "type": "object",
+                "properties": {
+                  "LongName": { "type": "string", "example": "Men Elite" },
+                  "ShortName": { "type": "string", "example": "ME" },
+                  "MinYear": { "type": "integer", "example": 1920 },
+                  "MaxYear": { "type": "integer", "example": 2004 },
+                  "Gender": { "type": "string", "example": "male" },
+                  "Entries": { "type": "integer", "example": 42 }
+                }
+              },
+              "StartTime": {
+                "type": "object",
+                "properties": {
+                  "Name": { "type": "string", "example": "Vlna 1 - Elite" },
+                  "Planned": { "type": "string", "example": "10:00:00" },
+                  "GunTime": { "type": "string", "example": "10:00:02" }
+                }
+              },
+              "CompetitionCompetitors": {
+                "type": "object",
+                "properties": {
+                  "Id": { "type": "integer", "example": 6245 },
+                  "Name": { "type": "string", "example": "Full Distance Triathlon" },
+                  "Distance": { "type": "number", "example": 45 },
+                  "Competitors": {
+                    "type": "array",
+                    "items": { "$ref": "#/components/schemas/Competitor" }
+                  }
+                }
+              },
+              "Competitor": {
+                "type": "object",
+                "properties": {
+                  "RaceNo": { "type": "string", "example": "84" },
+                  "Firstname": { "type": "string", "example": "Lukáš" },
+                  "Lastname": { "type": "string", "example": "PLIC" },
+                  "Gender": { "type": "string", "example": "male" },
+                  "YearOfBirth": { "type": "integer", "example": 2006 },
+                  "Nation": { "type": "string", "example": "CZE" },
+                  "Club": { "type": "string", "nullable": true, "example": "Triatlonová akademie Plzeň" },
+                  "Category": { "type": "string", "example": "M20-24" },
+                  "Status": { "type": "string", "example": "OK" },
+                  "RegistrationComplete": { "type": "boolean", "example": true }
+                }
+              },
+              "CompetitionResults": {
+                "type": "object",
+                "properties": {
+                  "Id": { "type": "integer", "example": 6245 },
+                  "Name": { "type": "string", "example": "Full Distance Triathlon" },
+                  "Distance": { "type": "number", "example": 45 },
+                  "Splits": {
+                    "type": "array",
+                    "items": { "$ref": "#/components/schemas/ResultSplit" }
+                  }
+                }
+              },
+              "ResultSplit": {
+                "type": "object",
+                "properties": {
+                  "Order": { "type": "integer", "example": 1 },
+                  "Name": { "type": "string", "example": "Swim lap1" },
+                  "IsStart": { "type": "boolean", "example": false },
+                  "IsFinish": { "type": "boolean", "example": false },
+                  "Results": {
+                    "type": "array",
+                    "items": { "$ref": "#/components/schemas/CompetitorResult" }
+                  }
+                }
+              },
+              "CompetitorResult": {
+                "type": "object",
+                "properties": {
+                  "RaceNo": { "type": "string", "example": "31" },
+                  "Firstname": { "type": "string", "example": "Michele" },
+                  "Lastname": { "type": "string", "example": "BONACINA" },
+                  "Gender": { "type": "string", "example": "male" },
+                  "YearOfBirth": { "type": "integer", "example": 1996 },
+                  "Nation": { "type": "string", "example": "ITA" },
+                  "Club": { "type": "string", "nullable": true, "example": null },
+                  "Time": { "type": "string", "nullable": true, "example": "00:08:07.397" },
+                  "Pos": { "type": "integer", "nullable": true, "example": 1 },
+                  "PosGender": { "type": "integer", "nullable": true, "example": 1 },
+                  "PosCategory": { "type": "integer", "nullable": true, "example": 1 },
+                  "Category": { "type": "string", "example": "ME" },
+                  "FinishTime": { "type": "string", "nullable": true, "example": null },
+                  "FinishPos": { "type": "integer", "nullable": true, "example": null },
+                  "FinishPosGender": { "type": "integer", "nullable": true, "example": null },
+                  "FinishPosCategory": { "type": "integer", "nullable": true, "example": null },
+                  "KOMPos": { "type": "integer", "nullable": true, "example": null },
+                  "KOMPoints": { "type": "number", "nullable": true, "example": null },
+                  "SprintPos": { "type": "integer", "nullable": true, "example": null },
+                  "SprintPoints": { "type": "number", "nullable": true, "example": null }
+                }
+              }
+            }
+          }
+        },
+        dom_id: '#swagger-ui',
+        deepLinking: true
+      });
+    };
+  </script>
+</body>
+</html>
